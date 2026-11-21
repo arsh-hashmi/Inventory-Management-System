@@ -1,0 +1,130 @@
+{% extends "inventory/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+    <small class="text-muted">Welcome, {{ request.user.get_full_name|default:request.user.username }}</small>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm summary-card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-boxes-stacked fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ total_products }}</h3>
+                <small>Total Products</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm summary-card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ low_stock_count }}</h3>
+                <small>Low Stock</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm summary-card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-times-circle fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ out_of_stock_count }}</h3>
+                <small>Out of Stock</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm summary-card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-tags fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ total_categories }}</h3>
+                <small>Categories</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm summary-card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-truck fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ total_suppliers }}</h3>
+                <small>Suppliers</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Products by Category</h6></div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Monthly Transactions</h6></div>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="fas fa-history me-2"></i>Recent Transactions</h6>
+        <a href="{% url 'inventory:transaction_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in recent_transactions %}
+                    <tr>
+                        <td>{{ txn.date_time|date:"M d, Y H:i" }}</td>
+                        <td>{{ txn.product.name }}</td>
+                        <td>
+                            {% if txn.type == 'STOCK_IN' %}
+                            <span class="badge bg-success">Stock In</span>
+                            {% elif txn.type == 'STOCK_OUT' %}
+                            <span class="badge bg-danger">Stock Out</span>
+                            {% elif txn.type == 'ADJUSTMENT' %}
+                            <span class="badge bg-warning text-dark">Adjustment</span>
+                            {% elif txn.type == 'SALE' %}
+                            <span class="badge bg-info">Sale</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ txn.quantity }}</td>
+                        <td>{{ txn.user.username|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No transactions yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

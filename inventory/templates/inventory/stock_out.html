@@ -1,0 +1,32 @@
+{% extends "inventory/base.html" %}
+{% block title %}Stock Out{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-danger text-white"><h5 class="mb-0"><i class="fas fa-arrow-up me-2"></i>Stock Out</h5></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_product" class="form-label">Product</label>
+                        {{ form.product }}
+                        {% for error in form.product.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_quantity" class="form-label">Quantity</label>
+                        {{ form.quantity }}
+                        <small class="form-text text-muted">Must not exceed available stock.</small>
+                        {% for error in form.quantity.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_notes" class="form-label">Notes (optional)</label>
+                        {{ form.notes }}
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100"><i class="fas fa-minus-circle me-1"></i>Remove Stock</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

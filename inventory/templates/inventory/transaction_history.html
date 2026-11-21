@@ -1,0 +1,73 @@
+{% extends "inventory/base.html" %}
+{% block title %}Transaction History{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-history me-2"></i>Transaction History</h2>
+    <a href="{% url 'inventory:report_transactions' %}?type={{ selected_type }}&date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-outline-danger"><i class="fas fa-file-pdf me-1"></i>Export PDF</a>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Type</label>
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    {% for value, label in type_choices %}
+                    <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">From Date</label>
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">To Date</label>
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr><th>#</th><th>Date/Time</th><th>Product</th><th>Type</th><th>Quantity</th><th>User</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                    {% for txn in transactions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ txn.date_time|date:"M d, Y H:i" }}</td>
+                        <td>{{ txn.product.name }}</td>
+                        <td>
+                            {% if txn.type == 'STOCK_IN' %}
+                            <span class="badge bg-success">Stock In</span>
+                            {% elif txn.type == 'STOCK_OUT' %}
+                            <span class="badge bg-danger">Stock Out</span>
+                            {% elif txn.type == 'ADJUSTMENT' %}
+                            <span class="badge bg-warning text-dark">Adjustment</span>
+                            {% elif txn.type == 'SALE' %}
+                            <span class="badge bg-info">Sale</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ txn.quantity }}</td>
+                        <td>{{ txn.user.username|default:"—" }}</td>
+                        <td>{{ txn.notes|default:"—"|truncatewords:10 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No transactions found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
