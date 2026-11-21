@@ -1,4 +1,4 @@
-"""Management command to seed the database with sample data."""
+"""Management command to seed the database with computer hardware inventory data in Indian Rupees (₹)."""
 
 from decimal import Decimal
 from django.core.management.base import BaseCommand
@@ -8,10 +8,27 @@ from inventory.models import (
 
 
 class Command(BaseCommand):
-    help = 'Seed the database with sample categories, suppliers, products, transactions, and users.'
+    help = 'Seed the database with computer products, categories, suppliers, and transactions in Rupees (₹).'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--clear',
+            action='store_true',
+            help='Clear existing products, categories, suppliers, transactions, and sales before seeding.',
+        )
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE('Seeding database...'))
+        self.stdout.write(self.style.NOTICE('Seeding database with Computer Hardware Inventory...'))
+
+        # Clear old catalog if requested or by default clean old demo items
+        if options.get('clear', True):
+            SaleItem.objects.all().delete()
+            Sale.objects.all().delete()
+            InventoryTransaction.objects.all().delete()
+            Product.objects.all().delete()
+            Category.objects.all().delete()
+            Supplier.objects.all().delete()
+            self.stdout.write(self.style.WARNING('  Cleared existing catalog data.'))
 
         # ── Users ─────────────────────────────────────────────────
         admin, created = User.objects.get_or_create(
@@ -30,7 +47,7 @@ class Command(BaseCommand):
             admin.save()
             self.stdout.write(self.style.SUCCESS('  Created admin user (admin / admin123)'))
         else:
-            self.stdout.write('  Admin user already exists.')
+            self.stdout.write('  Admin user verified.')
 
         staff, created = User.objects.get_or_create(
             username='staff',
@@ -46,15 +63,15 @@ class Command(BaseCommand):
             staff.save()
             self.stdout.write(self.style.SUCCESS('  Created staff user (staff / staff123)'))
         else:
-            self.stdout.write('  Staff user already exists.')
+            self.stdout.write('  Staff user verified.')
 
-        # ── Categories ────────────────────────────────────────────
+        # ── Computer Categories ───────────────────────────────────
         categories_data = [
-            ('Electronics', 'Electronic devices and accessories'),
-            ('Furniture', 'Office and home furniture'),
-            ('Office Supplies', 'Stationery, paper, and office essentials'),
-            ('Clothing', 'Apparel and accessories'),
-            ('Food & Beverages', 'Packaged food items and drinks'),
+            ('Laptops & Desktops', 'High-performance laptops, ultrabooks, workstations, and all-in-one desktop PCs'),
+            ('Computer Peripherals', 'Keyboards, gaming mice, 4K webcams, audio headsets, and input devices'),
+            ('PC Components & Storage', 'CPUs, graphics cards, motherboards, DDR5 RAM, and high-speed NVMe PCIe SSDs'),
+            ('Networking & Connectivity', 'Wi-Fi 6E routers, gigabit managed switches, network adapters, and Ethernet cables'),
+            ('Displays & Monitors', 'High refresh-rate gaming monitors, 4K IPS HDR displays, and workstation monitors'),
         ]
         categories = {}
         for name, desc in categories_data:
@@ -62,13 +79,13 @@ class Command(BaseCommand):
             categories[name] = cat
         self.stdout.write(self.style.SUCCESS(f'  Categories: {len(categories)}'))
 
-        # ── Suppliers ─────────────────────────────────────────────
+        # ── Computer Hardware Suppliers ───────────────────────────
         suppliers_data = [
-            ('TechWorld Distributors', '555-0101', 'sales@techworld.com', '123 Tech Blvd, Silicon Valley, CA'),
-            ('FurniCraft Ltd.', '555-0202', 'orders@furnicraft.com', '456 Woodwork Ave, Portland, OR'),
-            ('OfficeHub Supplies', '555-0303', 'supply@officehub.com', '789 Paper St, Chicago, IL'),
-            ('StyleWear Inc.', '555-0404', 'wholesale@stylewear.com', '321 Fashion Dr, New York, NY'),
-            ('FreshGoods Co.', '555-0505', 'orders@freshgoods.com', '654 Market St, San Francisco, CA'),
+            ('Apex Computer Distributors', '+91 98200 11223', 'sales@apexcomputers.in', 'Nehru Place Hardware Market, New Delhi, India'),
+            ('Silicon Valley Peripherals Ltd', '+91 98450 33445', 'orders@siliconperipherals.com', 'SP Road Electronic Zone, Bengaluru, Karnataka, India'),
+            ('GigaTech Components & Solutions', '+91 98310 55667', 'supply@gigatechindia.com', 'Lamington Road IT Hub, Mumbai, Maharashtra, India'),
+            ('NetConnect Infrastructure Co', '+91 98840 77889', 'wholesale@netconnect.co.in', 'Ritchie Street IT Park, Chennai, Tamil Nadu, India'),
+            ('UltraVision Displays India', '+91 98765 99001', 'distribution@ultravision.in', 'Cyber City Tech Corridor, Hyderabad, Telangana, India'),
         ]
         suppliers = {}
         for name, phone, email, address in suppliers_data:
@@ -79,27 +96,37 @@ class Command(BaseCommand):
             suppliers[name] = sup
         self.stdout.write(self.style.SUCCESS(f'  Suppliers: {len(suppliers)}'))
 
-        # ── Products ──────────────────────────────────────────────
+        # ── Computer Products (Priced in Indian Rupees ₹) ────────
         products_data = [
-            ('Wireless Mouse', 'Electronics', 'TechWorld Distributors', '29.99', 150, 20),
-            ('USB-C Hub', 'Electronics', 'TechWorld Distributors', '49.99', 8, 15),
-            ('Bluetooth Keyboard', 'Electronics', 'TechWorld Distributors', '59.99', 45, 10),
-            ('27" Monitor', 'Electronics', 'TechWorld Distributors', '299.99', 0, 5),
-            ('Webcam HD', 'Electronics', 'TechWorld Distributors', '79.99', 3, 10),
-            ('Office Desk', 'Furniture', 'FurniCraft Ltd.', '249.99', 12, 5),
-            ('Ergonomic Chair', 'Furniture', 'FurniCraft Ltd.', '399.99', 7, 5),
-            ('Filing Cabinet', 'Furniture', 'FurniCraft Ltd.', '129.99', 0, 3),
-            ('Bookshelf', 'Furniture', 'FurniCraft Ltd.', '89.99', 20, 5),
-            ('A4 Paper (500 sheets)', 'Office Supplies', 'OfficeHub Supplies', '8.99', 200, 50),
-            ('Ballpoint Pens (box)', 'Office Supplies', 'OfficeHub Supplies', '12.99', 5, 20),
-            ('Stapler', 'Office Supplies', 'OfficeHub Supplies', '15.99', 30, 10),
-            ('Whiteboard Markers', 'Office Supplies', 'OfficeHub Supplies', '9.99', 0, 15),
-            ('Cotton T-Shirt', 'Clothing', 'StyleWear Inc.', '19.99', 100, 25),
-            ('Denim Jeans', 'Clothing', 'StyleWear Inc.', '49.99', 60, 15),
-            ('Winter Jacket', 'Clothing', 'StyleWear Inc.', '89.99', 4, 10),
-            ('Instant Coffee (jar)', 'Food & Beverages', 'FreshGoods Co.', '12.99', 50, 20),
-            ('Bottled Water (pack)', 'Food & Beverages', 'FreshGoods Co.', '6.99', 2, 30),
+            # Laptops & Desktops
+            ('Dell XPS 15 Laptop (Intel i9, 32GB RAM, 1TB SSD)', 'Laptops & Desktops', 'Apex Computer Distributors', '149999.00', 12, 3),
+            ('HP Pavilion Gaming Desktop (Ryzen 7, RTX 4060)', 'Laptops & Desktops', 'Apex Computer Distributors', '84999.00', 8, 2),
+            ('Lenovo ThinkPad X1 Carbon Ultrabook 14"', 'Laptops & Desktops', 'Apex Computer Distributors', '124999.00', 0, 3),
+
+            # Computer Peripherals
+            ('Logitech MX Master 3S Wireless Mouse', 'Computer Peripherals', 'Silicon Valley Peripherals Ltd', '8995.00', 45, 10),
+            ('Corsair K70 RGB Mechanical Gaming Keyboard', 'Computer Peripherals', 'Silicon Valley Peripherals Ltd', '12499.00', 25, 8),
+            ('Logitech Brio 4K Ultra HD Pro Webcam', 'Computer Peripherals', 'Silicon Valley Peripherals Ltd', '16995.00', 4, 10),
+            ('SteelSeries Arctis Nova Pro Wireless Headset', 'Computer Peripherals', 'Silicon Valley Peripherals Ltd', '28999.00', 6, 5),
+
+            # PC Components & Storage
+            ('Samsung 990 PRO 2TB NVMe PCIe 4.0 SSD', 'PC Components & Storage', 'GigaTech Components & Solutions', '17499.00', 30, 8),
+            ('Kingston Fury Beast 32GB (2x16GB) DDR5 6000MHz RAM', 'PC Components & Storage', 'GigaTech Components & Solutions', '10499.00', 50, 15),
+            ('ASUS ROG Strix GeForce RTX 4070 Ti Super 16GB', 'PC Components & Storage', 'GigaTech Components & Solutions', '84999.00', 5, 5),
+            ('MSI MAG B650 Tomahawk WiFi Motherboard', 'PC Components & Storage', 'GigaTech Components & Solutions', '21999.00', 18, 5),
+            ('Corsair RM850x 850W 80+ Gold Fully Modular PSU', 'PC Components & Storage', 'GigaTech Components & Solutions', '11999.00', 0, 5),
+            ('Western Digital 4TB Red Plus NAS Internal HDD', 'PC Components & Storage', 'GigaTech Components & Solutions', '9499.00', 22, 6),
+
+            # Networking & Connectivity
+            ('TP-Link Archer AXE75 Tri-Band Wi-Fi 6E Router', 'Networking & Connectivity', 'NetConnect Infrastructure Co', '12999.00', 16, 5),
+            ('Cisco CBS250 24-Port Gigabit Managed Switch', 'Networking & Connectivity', 'NetConnect Infrastructure Co', '24999.00', 2, 4),
+            ('Cat6 RJ45 Gigabit Ethernet Patch Cable 10m', 'Networking & Connectivity', 'NetConnect Infrastructure Co', '499.00', 120, 30),
+
+            # Displays & Monitors
+            ('LG UltraGear 27" QHD 240Hz Nano IPS Gaming Monitor', 'Displays & Monitors', 'UltraVision Displays India', '32999.00', 15, 4),
+            ('Dell UltraSharp 32" 4K USB-C Hub Monitor (U3223QE)', 'Displays & Monitors', 'UltraVision Displays India', '76999.00', 0, 2),
         ]
+
         products = {}
         for name, cat_name, sup_name, price, qty, reorder in products_data:
             prod, _ = Product.objects.get_or_create(
@@ -115,14 +142,14 @@ class Command(BaseCommand):
             products[name] = prod
         self.stdout.write(self.style.SUCCESS(f'  Products: {len(products)}'))
 
-        # ── Sample Transactions ───────────────────────────────────
+        # ── Sample Inventory Transactions ─────────────────────────
         txn_data = [
-            ('Wireless Mouse', admin, 'STOCK_IN', 50, 'Initial bulk order'),
-            ('USB-C Hub', staff, 'STOCK_OUT', 5, 'Shipped to branch office'),
-            ('Bluetooth Keyboard', admin, 'ADJUSTMENT', -3, 'Damaged in warehouse'),
-            ('Office Desk', staff, 'STOCK_IN', 10, 'New shipment arrived'),
-            ('A4 Paper (500 sheets)', admin, 'STOCK_IN', 100, 'Monthly restock'),
-            ('Cotton T-Shirt', staff, 'STOCK_OUT', 20, 'Retail fulfillment'),
+            ('Dell XPS 15 Laptop (Intel i9, 32GB RAM, 1TB SSD)', admin, 'STOCK_IN', 15, 'Direct import from OEM distributor'),
+            ('Samsung 990 PRO 2TB NVMe PCIe 4.0 SSD', staff, 'STOCK_IN', 35, 'Bulk procurement for system integrations'),
+            ('Logitech MX Master 3S Wireless Mouse', staff, 'STOCK_OUT', 5, 'Shipped to enterprise client order'),
+            ('SteelSeries Arctis Nova Pro Wireless Headset', admin, 'ADJUSTMENT', -1, 'Defective packaging replaced via RMA'),
+            ('TP-Link Archer AXE75 Tri-Band Wi-Fi 6E Router', staff, 'STOCK_IN', 20, 'Seasonal replenishment'),
+            ('Cat6 RJ45 Gigabit Ethernet Patch Cable 10m', admin, 'STOCK_IN', 150, 'Standard cabling stock arrival'),
         ]
         txn_count = 0
         for prod_name, user, txn_type, qty, notes in txn_data:
@@ -136,21 +163,25 @@ class Command(BaseCommand):
             txn_count += 1
         self.stdout.write(self.style.SUCCESS(f'  Transactions: {txn_count}'))
 
-        # ── Sample Sale ───────────────────────────────────────────
-        sale = Sale.objects.create(user=admin, total_amount=Decimal('109.97'))
+        # ── Sample Sale (in Indian Rupees ₹) ──────────────────────
+        # Sale of 1 mouse (₹8,995), 1 SSD (₹17,499), and 2 Cat6 cables (2 * ₹499 = ₹998)
+        # Total = ₹27,492.00
+        total_sale_amount = Decimal('8995.00') + Decimal('17499.00') + (Decimal('499.00') * 2)
+        sale = Sale.objects.create(user=admin, total_amount=total_sale_amount)
+
         SaleItem.objects.create(
-            sale=sale, product=products['Wireless Mouse'],
-            quantity=2, unit_price=Decimal('29.99'),
+            sale=sale, product=products['Logitech MX Master 3S Wireless Mouse'],
+            quantity=1, unit_price=Decimal('8995.00'),
         )
         SaleItem.objects.create(
-            sale=sale, product=products['Ballpoint Pens (box)'],
-            quantity=1, unit_price=Decimal('12.99'),
+            sale=sale, product=products['Samsung 990 PRO 2TB NVMe PCIe 4.0 SSD'],
+            quantity=1, unit_price=Decimal('17499.00'),
         )
         SaleItem.objects.create(
-            sale=sale, product=products['Cotton T-Shirt'],
-            quantity=1, unit_price=Decimal('19.99'),
+            sale=sale, product=products['Cat6 RJ45 Gigabit Ethernet Patch Cable 10m'],
+            quantity=2, unit_price=Decimal('499.00'),
         )
-        # Record sale transactions
+
         for item in sale.items.all():
             InventoryTransaction.objects.create(
                 product=item.product,
@@ -159,9 +190,9 @@ class Command(BaseCommand):
                 quantity=item.quantity,
                 notes=f'Sale #{sale.pk}',
             )
-        self.stdout.write(self.style.SUCCESS(f'  Sales: 1 (with {sale.items.count()} items)'))
+        self.stdout.write(self.style.SUCCESS(f'  Sales: 1 (Total: ₹{total_sale_amount:,.2f} with {sale.items.count()} items)'))
 
-        self.stdout.write(self.style.SUCCESS('\nDatabase seeded successfully!'))
+        self.stdout.write(self.style.SUCCESS('\nComputer Inventory Database seeded successfully!'))
         self.stdout.write(self.style.WARNING('\nDefault Credentials:'))
-        self.stdout.write(f'  Admin: admin / admin123')
-        self.stdout.write(f'  Staff: staff / staff123')
+        self.stdout.write('  Admin: admin / admin123')
+        self.stdout.write('  Staff: staff / staff123')

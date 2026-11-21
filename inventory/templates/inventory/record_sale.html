@@ -39,7 +39,7 @@
                                         {{ item_form.unit_price }}
                                         {% for error in item_form.unit_price.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                                     </td>
-                                    <td class="subtotal-cell text-end fw-bold">$0.00</td>
+                                    <td class="subtotal-cell text-end fw-bold">₹0.00</td>
                                     <td class="text-center">
                                         {% if item_form.DELETE %}{{ item_form.DELETE }}{% endif %}
                                         {{ item_form.id }}
@@ -51,7 +51,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="3" class="text-end fw-bold">Grand Total:</td>
-                                    <td class="text-end fw-bold fs-5" id="grandTotal">$0.00</td>
+                                    <td class="text-end fw-bold fs-5" id="grandTotal">₹0.00</td>
                                     <td></td>
                                 </tr>
                             </tfoot>

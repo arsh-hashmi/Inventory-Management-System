@@ -563,7 +563,7 @@ def record_sale(request):
 
             messages.success(
                 request,
-                f'Sale #{sale.pk} recorded successfully. Total: ${total_amount:,.2f}.',
+                f'Sale #{sale.pk} recorded successfully. Total: ₹{total_amount:,.2f}.',
             )
             return redirect('inventory:record_sale')
     else:

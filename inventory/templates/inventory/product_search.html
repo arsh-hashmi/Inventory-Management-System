@@ -33,7 +33,7 @@
                         <td><strong>{{ p.name }}</strong></td>
                         <td>{{ p.category.name|default:"—" }}</td>
                         <td>{{ p.supplier.name|default:"—" }}</td>
-                        <td>${{ p.unit_price|floatformat:2 }}</td>
+                        <td>₹{{ p.unit_price|floatformat:2 }}</td>
                         <td>{{ p.quantity }}</td>
                         <td>
                             {% if p.is_out_of_stock %}

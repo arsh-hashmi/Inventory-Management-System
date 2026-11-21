@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Reset subtotal
         const subtotalCell = newRow.querySelector('.subtotal-cell');
-        if (subtotalCell) subtotalCell.textContent = '$0.00';
+        if (subtotalCell) subtotalCell.textContent = '₹0.00';
 
         formsetBody.appendChild(newRow);
         totalForms.value = formNum + 1;
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const subtotal = qty * price;
         const subtotalCell = row.querySelector('.subtotal-cell');
         if (subtotalCell) {
-            subtotalCell.textContent = '$' + subtotal.toFixed(2);
+            subtotalCell.textContent = '₹' + subtotal.toFixed(2);
         }
         updateGrandTotal();
     }
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
             total += qty * price;
         });
         if (grandTotalEl) {
-            grandTotalEl.textContent = '$' + total.toFixed(2);
+            grandTotalEl.textContent = '₹' + total.toFixed(2);
         }
     }
 

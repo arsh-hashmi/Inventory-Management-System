@@ -26,7 +26,7 @@
                         <td><strong>{{ p.name }}</strong></td>
                         <td>{{ p.category.name|default:"—" }}</td>
                         <td>{{ p.supplier.name|default:"—" }}</td>
-                        <td>${{ p.unit_price|floatformat:2 }}</td>
+                        <td>₹{{ p.unit_price|floatformat:2 }}</td>
                         <td>
                             <strong>{{ p.quantity }}</strong>
                         </td>

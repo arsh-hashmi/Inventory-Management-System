@@ -1,6 +1,6 @@
-# Inventory Management System (IMS)
+# Computer Hardware Inventory Management System (IMS)
 
-A centralized, responsive web-based platform for managing products, categories, suppliers, stock movements, sales transactions, audit histories, low-stock alerts, analytics dashboards, and PDF reports.
+A centralized, responsive web-based platform for managing computer hardware products, component categories, IT suppliers, stock movements, sales transactions in Indian Rupees (₹), audit histories, low-stock alerts, analytics dashboards, and PDF reports.
 
 Built strictly according to the **Software Requirements Specification (SRS)** using **Python 3**, **Django**, **Bootstrap 5**, **Chart.js**, and **ReportLab**.
 

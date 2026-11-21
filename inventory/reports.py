@@ -108,7 +108,7 @@ def generate_inventory_pdf(products) -> HttpResponse:
             product.name,
             category_name,
             supplier_name,
-            f'${product.unit_price:,.2f}',
+            f'₹{product.unit_price:,.2f}',
             str(product.quantity),
             str(product.reorder_level),
             status,
@@ -192,9 +192,9 @@ def generate_sales_pdf(sales) -> HttpResponse:
                 sale_user if first else '',
                 product_name,
                 str(item.quantity),
-                f'${item.unit_price:,.2f}',
-                f'${subtotal:,.2f}',
-                f'${sale.total_amount:,.2f}' if first else '',
+                f'₹{item.unit_price:,.2f}',
+                f'₹{subtotal:,.2f}',
+                f'₹{sale.total_amount:,.2f}' if first else '',
             ])
             first = False
         grand_total += sale.total_amount
@@ -206,7 +206,7 @@ def generate_sales_pdf(sales) -> HttpResponse:
 
     elements.append(Spacer(1, 16))
     elements.append(Paragraph(
-        f'<b>Grand Total:</b> ${grand_total:,.2f}', styles['Normal'],
+        f'<b>Grand Total:</b> ₹{grand_total:,.2f}', styles['Normal'],
     ))
 
     doc.build(elements, onFirstPage=_page_number, onLaterPages=_page_number)
